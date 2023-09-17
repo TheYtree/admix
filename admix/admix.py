@@ -107,7 +107,7 @@ def admix_results(models,
             if zh == False:  # English
                 population = population_en
             else:  # Chinese
-                population = population_zh
+                population = population_zh + ' ' + population_en
             result += '{:s}: {:.2f}%'.format(population, 100 * frac) + '\n'
         result += '\n'
 

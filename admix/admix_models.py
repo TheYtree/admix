@@ -31,7 +31,10 @@ def models():
             'K14M1',
             'K18M4',
             'K25R1',
-            'MichalK25']
+            'MichalK25',
+            'EastSeaK12',
+            'ProjectLiK11',
+            'ProjectLiK14']
 
 # population names for all models
 def populations(model):
@@ -463,6 +466,46 @@ def populations(model):
                 ('Kalash', '卡拉什人'),
                 ('Northeast Asian', '东北亚'),
                 ('West African', '西非')]
+    elif model == 'EastSeaK12':
+        return [('Dai', '傣族'),
+                ('Han', '汉族'),
+                ('Korean', '韩国'),
+                ('Japanese', '日本'),
+                ('Mongolian-Tungusic', '蒙古·通古斯'),
+                ('Yakuts', '雅库特'),
+                ('Tibetan', '藏族'),
+                ('Cambodian', '柬埔寨'),
+                ('Indian', '印度'),
+                ('Amerindian', '美洲印第安人'),
+                ('European', '欧洲'),
+                ('African', '非洲')]
+    elif model == 'ProjectLiK11':
+        return [('American', '美洲'),
+                ('East Asian / Ancient Yellow River', '东亚古黄河'),
+                ('Ancient Mongolia', '古代蒙古'),
+                ('South India / Irula', '南印度伊鲁拉'),
+                ('West Eurasian / Ancient Persia', '西欧亚古波斯'),
+                ('Jomon', '绳文'),
+                ('Andaman', '安达曼'),
+                ('Ancient Nepal', '尼泊尔古藏缅'),
+                ('Ancient Taiwan / Hanben', '东亚古台湾(汉本)'),
+                ('Ancient Vanuatu', '古南岛瓦努阿图'),
+                ('African / Yoruba', '非洲约鲁巴')]
+    elif model == 'ProjectLiK14':
+        return [('Amur', '古黑龙江'),
+                ('Yellow River', '东亚古黄河'),
+                ('Dai', '傣族'),
+                ('Irula', '南印度伊鲁拉'),
+                ('Iran', '西欧亚古波斯'),
+                ('Jomon', '日本绳文'),
+                ('Siberian', '古西伯利亚'),
+                ('Mongolia', '古代蒙古'),
+                ('Nepal', '尼泊尔古藏缅'),
+                ('Hanben', '古台湾(汉本)'),
+                ('Vanuatu', '古南岛瓦努阿图'),
+                ('Yoruba', '非洲约鲁巴'),
+                ('Xiaohe', '新疆罗布泊小河'),
+                ('Zhegan', '浙赣')]
     else:
         print('Model does not exist!')
         return None
