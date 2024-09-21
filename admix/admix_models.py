@@ -34,7 +34,7 @@ def models():
             'MichalK25',
             'EastSeaK12',
             'ProjectLiK11',
-            'ProjectLiK14']
+            'ProLi14']
 
 # population names for all models
 def populations(model):
@@ -491,21 +491,21 @@ def populations(model):
                 ('Ancient Taiwan / Hanben', '东亚古台湾(汉本)'),
                 ('Ancient Vanuatu', '古南岛瓦努阿图'),
                 ('African / Yoruba', '非洲约鲁巴')]
-    elif model == 'ProjectLiK14':
-        return [('Amur', '古黑龙江'),
-                ('Yellow River', '东亚古黄河'),
-                ('Dai', '傣族'),
-                ('Irula', '南印度伊鲁拉'),
-                ('Iran', '西欧亚古波斯'),
-                ('Jomon', '日本绳文'),
-                ('Siberian', '古西伯利亚'),
-                ('Mongolia', '古代蒙古'),
-                ('Nepal', '尼泊尔古藏缅'),
-                ('Hanben', '古台湾(汉本)'),
-                ('Vanuatu', '古南岛瓦努阿图'),
-                ('Yoruba', '非洲约鲁巴'),
-                ('Xiaohe', '新疆罗布泊小河'),
-                ('Zhegan', '浙赣')]
+    elif model == 'ProLi14':
+        return [('Jomon', '绳文'),
+                ('African', '非洲'),
+                ('Old East Euro(Karelia)', '古东欧(卡累利亚共和国)'),
+                ('Ancient Anatolia Farmer', '古安纳托利亚农民'),
+                ('Ancient Euro Hunter', '古西欧猎人'),
+                ('Old Iran(GanjDareh)', '古伊朗(扎格罗斯山脉)'),
+                ('Onge', '安达曼'),
+                ('Chemurchek', '古中亚(切尔木切克人)'),
+                ('Old Mongolia North', '古蒙古北部'),
+                ('Old SE Chinese(Hanben)', '古东南(汉本遗址)'),
+                ('Ancient NE Chinese(Devil\'s Gate)', '古东北(黑龙江流域)'),
+                ('Old Nepal(Samdzong)', '古高原(尼泊尔)'),
+                ('South India(Irula)', '南印度(伊鲁拉)'),
+                ('Old Central Chinese(Ping Liang Tai)', '古华中(平粮台遗址)')]
     else:
         print('Model does not exist!')
         return None
