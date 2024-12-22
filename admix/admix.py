@@ -109,6 +109,8 @@ def admix_results(models,
                 population = population_en
             else:  # Chinese
                 population = population_zh + ' ' + population_en
+            if frac < 0.001:
+                continue
             result += '{:s}: {:.2f}%'.format(population, 100 * frac) + '\n'
             if 100 * frac > 98:
                 badresult = True
