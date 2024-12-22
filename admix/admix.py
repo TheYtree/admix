@@ -109,10 +109,11 @@ def admix_results(models,
             else:  # Chinese
                 population = population_zh + ' ' + population_en
             result += '{:s}: {:.2f}%'.format(population, 100 * frac) + '\n'
-        result += '\n'
-
+        
         # print out results
         print(result)
+
+        result += '\n'
 
         # write results to file
         if (output_filename is not None):
