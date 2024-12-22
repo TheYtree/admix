@@ -101,6 +101,7 @@ def admix_results(models,
             admix_frac = admix_frac[idx]
             populations = populations[idx]
 
+        badresult = False
         for (i, frac) in enumerate(admix_frac):
             if ignore_zeros and frac < 1e-4: continue
             population_en, population_zh = populations[i]
@@ -109,6 +110,8 @@ def admix_results(models,
             else:  # Chinese
                 population = population_zh + ' ' + population_en
             result += '{:s}: {:.2f}%'.format(population, 100 * frac) + '\n'
+            if 100 * frac > 98:
+                badresult = True
         
         # print out results
         print(result)
@@ -116,7 +119,7 @@ def admix_results(models,
         result += '\n'
 
         # write results to file
-        if (output_filename is not None):
+        if (output_filename is not None and badresult == False):
             f.write(result)
 
     # close file
