@@ -2,6 +2,7 @@ import sys, os
 sys.path.append(os.path.dirname(__file__))
 import argparse
 from admix_fraction import admix_fraction
+from position_based_admix import admix_fraction_by_position, print_results
 import admix_models
 import numpy as np
 
@@ -66,6 +67,12 @@ def arguments():
         action='store_true',
         help='only display non-zero proportions')
 
+    # use position-based analysis
+    parser.add_argument(
+        '--position-based',
+        action='store_true',
+        help='use position-based analysis for higher precision')
+
     return parser.parse_args()
 
 
@@ -77,7 +84,8 @@ def admix_results(models,
                   sort,
                   ignore_zeros,
                   raw_data_format,
-                  raw_data_file=None):
+                  raw_data_file=None,
+                  position_based=False):
     # write results to a file
     if (output_filename is not None):
         f = open(output_filename, 'w')
@@ -91,8 +99,23 @@ def admix_results(models,
 
     for model in models:
         result = model + '\n'
-        admix_frac = np.array(
-            admix_fraction(model, raw_data_format, raw_data_file, tolerance))
+        
+        if position_based:
+            # Use position-based analysis
+            try:
+                admix_frac = np.array(
+                    admix_fraction_by_position(model, raw_data_file, tolerance))
+                print(f"使用基于位置的分析方法")
+            except Exception as e:
+                print(f"基于位置的分析失败: {e}")
+                print(f"回退到标准分析方法")
+                admix_frac = np.array(
+                    admix_fraction(model, raw_data_format, raw_data_file, tolerance))
+        else:
+            # Use standard analysis
+            admix_frac = np.array(
+                admix_fraction(model, raw_data_format, raw_data_file, tolerance))
+        
         populations = np.array(admix_models.populations(model))
 
         # perform a descending sort of the fractions
@@ -145,6 +168,13 @@ def main():
             if not m in all_models:
                 print('Cannot find model ' + m + '!')
                 exit()
+    
+    # Display analysis method
+    if args.position_based:
+        print('\nUsing position-based analysis for higher precision...\n')
+    else:
+        print('\nUsing standard analysis method...\n')
+    
     print('\nAdmixture calculation models: ' + ','.join(models) + '\n')
 
     # raw data not set
@@ -161,7 +191,7 @@ def main():
     # beginning of calculation
     print('Calcuation is started...\n')
     admix_results(models, args.output, args.zhongwen, args.tolerance,
-                  args.sort, args.ignore_zeros, args.vendor, args.file)
+                  args.sort, args.ignore_zeros, args.vendor, args.file, args.position_based)
 
 
 if __name__ == '__main__':
