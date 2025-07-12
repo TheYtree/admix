@@ -36,7 +36,24 @@ def read_raw_data_by_position(data_file_name):
     return processed_data, position_data
 
 def read_model_by_position(model_name):
-    model_file = f'data/position_models/{model_name}.position.alleles'
+    # 尝试多个可能的路径
+    possible_paths = [
+        f'data/position_models/{model_name}.position.alleles',
+        f'admix/data/position_models/{model_name}.position.alleles',
+        os.path.join(os.path.dirname(__file__), f'data/position_models/{model_name}.position.alleles')
+    ]
+    
+    model_file = None
+    for path in possible_paths:
+        if os.path.isfile(path):
+            model_file = path
+            break
+    
+    if model_file is None:
+        print(f'Cannot find the position model file for {model_name}!')
+        print(f'Tried paths: {possible_paths}')
+        exit()
+    
     check_file(model_file)
     snp_keys = []
     minor_alleles = []
@@ -90,7 +107,26 @@ def admix_fraction_by_position(model, raw_data_file=None, tolerance=1e-3):
     genome_data, _ = read_raw_data_by_position(raw_data_file)
     print(f"读取到 {len(genome_data)} 个有效SNP")
     snp_keys, minor_alleles, major_alleles, rsids = read_model_by_position(model)
-    freq_file = f"data/{model}.{admix_models.n_populations(model)}.F"
+    
+    # 尝试多个可能的频率文件路径
+    freq_file_name = f"{model}.{admix_models.n_populations(model)}.F"
+    possible_freq_paths = [
+        f"data/{freq_file_name}",
+        f"admix/data/{freq_file_name}",
+        os.path.join(os.path.dirname(__file__), f"data/{freq_file_name}")
+    ]
+    
+    freq_file = None
+    for path in possible_freq_paths:
+        if os.path.isfile(path):
+            freq_file = path
+            break
+    
+    if freq_file is None:
+        print(f'Cannot find the frequency file for {model}!')
+        print(f'Tried paths: {possible_freq_paths}')
+        exit()
+    
     frequency = []
     with open(freq_file, 'r') as f:
         reader = csv.reader(f, delimiter=' ')
