@@ -245,9 +245,9 @@ Admix 支持许多公开可用的混合分析模型。所有计算器文件都�
 | `K18M4` | Tolan K18M4 | [链接](http://gen3553.pagesperso-orange.fr/ADN/Calc.htm) |
 | `K25R1` | Tolan K25R1 | [链接](http://gen3553.pagesperso-orange.fr/ADN/Calc.htm) |
 | `MichalK25`| Michal World K25 | [链接](https://anthrogenica.com/showthread.php?13359-Michal-s-World-K25-calculator) |
-| `EastSeaK12` | East Sea K12 | [链接](https://anthrogenica.com/showthread.php?13359-Michal-s-World-K25-calculator) |
-| `ProjectLiK11` | Project Li K11 | [链接](https://anthrogenica.com/showthread.php?13359-Michal-s-World-K25-calculator) |
-| `ProLi14` | Pro Li 14 | [链接](https://anthrogenica.com/showthread.php?13359-Michal-s-World-K25-calculator) |
+| `EastSeaK12` | East Sea K12 | |
+| `ProjectLiK11` | Project Li K11 | |
+| `ProLi14` | Pro Li 14 | |
 
 ## 实现原理
 
