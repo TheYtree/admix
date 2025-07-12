@@ -23,7 +23,6 @@ Admix 是一个用于计算祖先成分（混合比例）的简单工具，支�
 - [使用方法](#使用方法)
   - [基本用法](#基本用法)
   - [基于位置的分析](#基于位置的分析)
-  - [批量分析](#批量分析)
   - [高级选项](#高级选项)
 - [输出示例](#输出示例)
 - [常见问题](#常见问题)
@@ -97,24 +96,16 @@ admix -z -m E11
 
 ### 基于位置的分析
 
-新增的基于位置的分析功能提供更高精度的分析结果：
+新增的基于位置的分析功能提供更高精度的分析结果。使用 `--position-based` 参数启用此功能：
 
 ```bash
-python admix/position_based_admix.py -f my_raw_data.txt -m K7b
+admix -f my_raw_data.txt -m E11 --position-based
 ```
 
-支持批量基于位置的分析：
+基于位置的分析会显示匹配的SNP统计信息，提供更详细的分析过程：
 
 ```bash
-python admix/batch_position_analysis.py -f my_raw_data.txt -m K7b K12b E11
-```
-
-### 批量分析
-
-使用批量分析工具可以同时分析多个模型：
-
-```bash
-python admix/batch_position_analysis.py -f my_raw_data.txt -m K7b K12b E11 --sort -z
+admix -f my_raw_data.txt -m E11 --position-based -z --sort
 ```
 
 ### 高级选项
@@ -123,6 +114,7 @@ python admix/batch_position_analysis.py -f my_raw_data.txt -m K7b K12b E11 --sor
 - `--sort`: 对结果进行降序排序
 - `--ignore-zeros`: 只显示非零比例
 - `-z, --zhongwen`: 显示中文种群名称
+- `--position-based`: 使用基于位置的分析方法（更高精度）
 
 获取更多帮助信息：
 
@@ -174,21 +166,27 @@ Sub Saharan: 0.00%
 
 ### 基于位置的分析输出
 
-命令：`python admix/position_based_admix.py -f my_raw_data.txt -m E11 -z`
+命令：`admix -f my_raw_data.txt -m E11 --position-based -z`
 
 输出：
 ```
-读取到 123456 个有效SNP
-位置匹配统计: 45678/50000 SNPs 匹配
+Using position-based analysis for higher precision...
 
-=== E11 分析结果 ===
-华东 East Chinese: 47.76%
-傣族 South Chinese Dai: 20.13%
-彝族 Southwest Chinese Yi: 16.51%
-鄂伦春 North Chinese Oroqen: 8.25%
-日本 Japanese: 6.69%
-美洲 American: 0.40%
-非洲 African: 0.25%
+Admixture calculation models: E11
+
+Calcuation is started...
+
+读取到 739868 个有效SNP
+位置匹配统计: 160026/170288 SNPs 匹配
+使用基于位置的分析方法
+E11
+华东 East Chinese: 47.56%
+傣族 South Chinese Dai: 19.87%
+彝族 Southwest Chinese Yi: 16.44%
+鄂伦春 North Chinese Oroqen: 8.33%
+日本 Japanese: 7.25%
+非洲 African: 0.41%
+美洲 American: 0.16%
 ```
 
 ## 常见问题
@@ -247,9 +245,9 @@ Admix 支持许多公开可用的混合分析模型。所有计算器文件都�
 | `K18M4` | Tolan K18M4 | [链接](http://gen3553.pagesperso-orange.fr/ADN/Calc.htm) |
 | `K25R1` | Tolan K25R1 | [链接](http://gen3553.pagesperso-orange.fr/ADN/Calc.htm) |
 | `MichalK25`| Michal World K25 | [链接](https://anthrogenica.com/showthread.php?13359-Michal-s-World-K25-calculator) |
-| `EastSeaK12` | East Sea K12 |  |
-| `ProjectLiK11` | Project Li K11 |  |
-| `ProLi14` | Pro Li 14 |  |
+| `EastSeaK12` | East Sea K12 | [链接](https://anthrogenica.com/showthread.php?13359-Michal-s-World-K25-calculator) |
+| `ProjectLiK11` | Project Li K11 | [链接](https://anthrogenica.com/showthread.php?13359-Michal-s-World-K25-calculator) |
+| `ProLi14` | Pro Li 14 | [链接](https://anthrogenica.com/showthread.php?13359-Michal-s-World-K25-calculator) |
 
 ## 实现原理
 
