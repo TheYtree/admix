@@ -103,18 +103,31 @@ def admix_results(models,
         if position_based:
             # Use position-based analysis
             try:
-                admix_frac = np.array(
-                    admix_fraction_by_position(model, raw_data_file, tolerance))
-                print(f"使用基于位置的分析方法")
+                result_tuple = admix_fraction_by_position(model, raw_data_file, tolerance, raw_data_format)
+                if isinstance(result_tuple, tuple) and len(result_tuple) == 2:
+                    admix_frac, utilization_rate = result_tuple
+                    admix_frac = np.array(admix_frac)
+                    print(f"使用基于位置的分析方法")
+                else:
+                    # 兼容旧版本返回格式
+                    admix_frac = np.array(result_tuple)
+                    utilization_rate = None
             except Exception as e:
                 print(f"基于位置的分析失败: {e}")
                 print(f"回退到标准分析方法")
                 admix_frac = np.array(
                     admix_fraction(model, raw_data_format, raw_data_file, tolerance))
+                utilization_rate = None
         else:
             # Use standard analysis
-            admix_frac = np.array(
-                admix_fraction(model, raw_data_format, raw_data_file, tolerance))
+            result_tuple = admix_fraction(model, raw_data_format, raw_data_file, tolerance)
+            if isinstance(result_tuple, tuple) and len(result_tuple) == 2:
+                admix_frac, utilization_rate = result_tuple
+                admix_frac = np.array(admix_frac)
+            else:
+                # 兼容旧版本返回格式
+                admix_frac = np.array(result_tuple)
+                utilization_rate = None
         
         populations = np.array(admix_models.populations(model))
 
@@ -137,6 +150,14 @@ def admix_results(models,
             result += '{:s}: {:.2f}%'.format(population, 100 * frac) + '\n'
             if 100 * frac > 98:
                 badresult = True
+        
+        # 将利用率添加到模型名称中（position-based和标准分析都支持）
+        if utilization_rate is not None:
+            # 重新构建结果字符串，将利用率添加到模型名称
+            lines = result.split('\n')
+            if lines and lines[0].strip():  # 确保第一行不为空
+                lines[0] = f"{model} ({utilization_rate*100:.0f}%)"
+                result = '\n'.join(lines)
         
         # print out results
         print(result)

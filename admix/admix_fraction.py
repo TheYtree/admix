@@ -18,7 +18,11 @@ def genotype_matches(genome_data, snp, major_alleles, minor_alleles):
                 for (i, a) in enumerate(minor_alleles)]
     g_minor = np.array(g_minor1).astype(int) + np.array(g_minor2).astype(int)
 
-    return g_major, g_minor
+    # 计算匹配的SNP数量
+    matched_count = sum(1 for i, s in enumerate(snp) if s in genome_data)
+    total_snps = len(snp)
+
+    return g_major, g_minor, matched_count, total_snps
 
 
 # log likelihood function
@@ -34,7 +38,7 @@ def likelihood(g_major, g_minor, frequency, admixture_fraction):
 def admix_fraction(model, raw_data_format, raw_data_file=None, tolerance=1e-3):
     genome_data = read_raw_data(raw_data_format, raw_data_file)
     snp, minor_alleles, major_alleles, frequency = read_model(model)
-    g_major, g_minor = genotype_matches(genome_data, snp, major_alleles,
+    g_major, g_minor, matched_count, total_snps = genotype_matches(genome_data, snp, major_alleles,
                                         minor_alleles)
 
     # set uniform initial guess for optimization
@@ -54,4 +58,7 @@ def admix_fraction(model, raw_data_format, raw_data_file=None, tolerance=1e-3):
         constraints=constraints,
         tol=tolerance).x
 
-    return admix_frac
+    # 计算利用率
+    utilization_rate = matched_count / total_snps if total_snps > 0 else 0
+
+    return admix_frac, utilization_rate

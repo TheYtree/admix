@@ -14,17 +14,45 @@ def check_file(file_name):
         print('Cannot find the file \'' + file_name + '\'!\n')
         exit()
 
-def read_raw_data_by_position(data_file_name):
+def read_raw_data_by_position(data_file_name, data_format=None):
     check_file(data_file_name)
     processed_data = {}
     position_data = {}
+    
     with open(data_file_name, 'r') as data:
-        reader = csv.reader(data, delimiter='\t')  # 使用制表符分隔符
+        reader = csv.reader(data, delimiter='\t')
+        
+        # 读取前几行来检测数据格式
+        sample_rows = []
+        for i, row in enumerate(reader):
+            if i < 5:  # 读取前5行来检测格式
+                sample_rows.append(row)
+            else:
+                break
+        
+        # 检测数据格式
+        detected_format = data_format
+        if not detected_format:
+            if len(sample_rows) > 0:
+                if len(sample_rows[0]) == 5 and sample_rows[0][-1] in ['A', 'T', 'G', 'C']:
+                    detected_format = 'ancestry'
+                elif len(sample_rows[0]) == 4:
+                    detected_format = '23andme'
+                else:
+                    detected_format = 'unknown'
+        
+        # 重新打开文件进行实际处理
+        data.seek(0)
+        reader = csv.reader(data, delimiter='\t')
+        
         for row in reader:
-            if len(row) >= 4:
-                rsid, chrom, pos, genotype = row[0], row[1], row[2], row[3]
-                if genotype not in ['--', 'DD', 'II', 'DI'] and len(genotype) == 2:
-                    if genotype[0] in ['A', 'T', 'G', 'C'] and genotype[1] in ['A', 'T', 'G', 'C']:
+            if detected_format == 'ancestry':
+                # ancestry格式: rsid, chrom, pos, allele1, allele2
+                if len(row) == 5 and row[-1] in ['A', 'T', 'G', 'C']:
+                    rsid, chrom, pos, allele1, allele2 = row[0], row[1], row[2], row[3], row[4]
+                    # 组合等位基因
+                    genotype = allele1 + allele2
+                    if len(genotype) == 2 and genotype[0] in ['A', 'T', 'G', 'C'] and genotype[1] in ['A', 'T', 'G', 'C']:
                         position_key = f"{chrom}:{pos}"
                         processed_data[position_key] = genotype
                         position_data[position_key] = {
@@ -33,6 +61,21 @@ def read_raw_data_by_position(data_file_name):
                             'pos': pos,
                             'genotype': genotype
                         }
+            else:
+                # 默认23andme格式: rsid, chrom, pos, genotype
+                if len(row) >= 4:
+                    rsid, chrom, pos, genotype = row[0], row[1], row[2], row[3]
+                    if genotype not in ['--', 'DD', 'II', 'DI'] and len(genotype) == 2:
+                        if genotype[0] in ['A', 'T', 'G', 'C'] and genotype[1] in ['A', 'T', 'G', 'C']:
+                            position_key = f"{chrom}:{pos}"
+                            processed_data[position_key] = genotype
+                            position_data[position_key] = {
+                                'rsid': rsid,
+                                'chrom': chrom,
+                                'pos': pos,
+                                'genotype': genotype
+                            }
+    
     return processed_data, position_data
 
 def read_model_by_position(model_name):
@@ -81,6 +124,8 @@ def genotype_matches_by_position(genome_data, snp_keys, minor_alleles, major_all
     g_major = []
     g_minor = []
     matched_count = 0
+    total_snps = len(snp_keys)
+    
     for i, key in enumerate(snp_keys):
         if key and key in genome_data:  # 有位置信息且在数据中找到
             genotype = genome_data[key]
@@ -94,8 +139,9 @@ def genotype_matches_by_position(genome_data, snp_keys, minor_alleles, major_all
         else:  # 没有位置信息或没找到匹配
             g_major.append(0)
             g_minor.append(0)
-    print(f"位置匹配统计: {matched_count}/{len(snp_keys)} SNPs 匹配")
-    return np.array(g_major), np.array(g_minor)
+    
+    print(f"位置匹配统计: {matched_count}/{total_snps} SNPs 匹配")
+    return np.array(g_major), np.array(g_minor), matched_count, total_snps
 
 def likelihood(g_major, g_minor, frequency, admixture_fraction):
     l1 = np.dot(g_major, np.log(np.dot(frequency, admixture_fraction)))
@@ -103,8 +149,8 @@ def likelihood(g_major, g_minor, frequency, admixture_fraction):
     l = l1 + l2
     return -l
 
-def admix_fraction_by_position(model, raw_data_file=None, tolerance=1e-3):
-    genome_data, _ = read_raw_data_by_position(raw_data_file)
+def admix_fraction_by_position(model, raw_data_file=None, tolerance=1e-3, data_format=None):
+    genome_data, _ = read_raw_data_by_position(raw_data_file, data_format)
     print(f"读取到 {len(genome_data)} 个有效SNP")
     snp_keys, minor_alleles, major_alleles, rsids = read_model_by_position(model)
     
@@ -133,7 +179,7 @@ def admix_fraction_by_position(model, raw_data_file=None, tolerance=1e-3):
         for row in reader:
             frequency.append([float(f) for f in row])
     frequency = np.array(frequency)
-    g_major, g_minor = genotype_matches_by_position(genome_data, snp_keys, minor_alleles, major_alleles)
+    g_major, g_minor, matched_count, total_snps = genotype_matches_by_position(genome_data, snp_keys, minor_alleles, major_alleles)
     n_populations = admix_models.n_populations(model)
     initial_guess = np.ones(n_populations) / n_populations
     bounds = tuple((0, 1) for i in range(n_populations))
@@ -145,9 +191,13 @@ def admix_fraction_by_position(model, raw_data_file=None, tolerance=1e-3):
         bounds=bounds,
         constraints=constraints,
         tol=tolerance).x
-    return admix_frac
+    
+    # 计算利用率
+    utilization_rate = matched_count / total_snps if total_snps > 0 else 0
+    
+    return admix_frac, utilization_rate
 
-def print_results(model, result, sort=False, zh=False, ignore_zeros=False):
+def print_results(model, result, sort=False, zh=False, ignore_zeros=False, utilization_rate=None):
     """打印分析结果，支持排序和中文显示"""
     populations = admix_models.populations(model)
     if not populations:
@@ -163,7 +213,12 @@ def print_results(model, result, sort=False, zh=False, ignore_zeros=False):
         admix_frac = admix_frac[idx]
         populations = populations[idx]
     
-    print(f"\n=== {model} 分析结果 ===")
+    # 在标题中显示利用率
+    if utilization_rate is not None:
+        print(f"\n=== {model} ({utilization_rate*100:.0f}%) 分析结果 ===")
+    else:
+        print(f"\n=== {model} 分析结果 ===")
+    
     for i, (pop_en, pop_zh) in enumerate(populations):
         frac = admix_frac[i]
         if ignore_zeros and frac < 1e-4:
@@ -183,17 +238,26 @@ def main():
     parser = argparse.ArgumentParser(description='基于位置的祖先成分分析')
     parser.add_argument('-f', '--file', required=True, help='输入文件')
     parser.add_argument('-m', '--model', default='K7b', help='分析模型')
+    parser.add_argument('-v', '--vendor', default='23andme', help='数据格式 (23andme, ancestry, ftdna, etc.)')
     parser.add_argument('-t', '--tolerance', default='1e-3', help='优化容差')
     parser.add_argument('--sort', action='store_true', help='对结果进行降序排序')
     parser.add_argument('-z', '--zhongwen', action='store_true', help='显示中文种群名称')
     parser.add_argument('--ignore-zeros', action='store_true', help='只显示非零比例')
     
     args = parser.parse_args()
-    result = admix_fraction_by_position(args.model, args.file, float(args.tolerance))
-    if result is not None:
-        print_results(args.model, result, args.sort, args.zhongwen, args.ignore_zeros)
+    result_tuple = admix_fraction_by_position(args.model, args.file, float(args.tolerance), args.vendor)
+    if isinstance(result_tuple, tuple) and len(result_tuple) == 2:
+        result, utilization_rate = result_tuple
+        if result is not None:
+            print_results(args.model, result, args.sort, args.zhongwen, args.ignore_zeros, utilization_rate)
+        else:
+            print("分析失败")
     else:
-        print("分析失败")
+        # 兼容旧版本返回格式
+        if result_tuple is not None:
+            print_results(args.model, result_tuple, args.sort, args.zhongwen, args.ignore_zeros)
+        else:
+            print("分析失败")
 
 if __name__ == "__main__":
     main() 
